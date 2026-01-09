@@ -26,7 +26,6 @@
         .train-row .time { font-weight: 800; color: var(--accent); font-size: 1rem; }
         .line-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
         .piccadilly { background: #003688; } .victoria { background: #0098d4; } .rail { background: #333; }
-        #alert-box { display: none; background: #fff9c4; padding: 14px; border-radius: 16px; margin-bottom: 16px; font-size: 0.85rem; font-weight: 600; border-left: 6px solid #fbc02d; color: #5f4b00; }
         footer { margin-top: auto; text-align: center; padding: 20px; font-size: 0.7rem; color: var(--text-sub); font-weight: 600; }
     </style>
 </head>
@@ -40,9 +39,7 @@
         <div class="icon">⇄</div>
     </div>
 
-    <div id="alert-box"></div>
     <div id="line-status-summary"></div>
-
     <div id="container"></div>
 
     <footer>
@@ -64,7 +61,6 @@
         async function updateUI() {
             const root = document.documentElement;
             const container = document.getElementById('container');
-            document.getElementById('alert-box').style.display = 'none';
 
             if (isOutward) {
                 root.style.setProperty('--accent', '#d32f2f');
@@ -79,9 +75,10 @@
                     <h3>Leg 3: Bounds Green (Picc) Southbound</h3>
                     <div id="arr-3" class="card">Fetching...</div>
                 `;
-                fetchArrivals(STATIONS.bowes, 'arr-1', 'Southbound');
-                fetchArrivals(STATIONS.hi, 'arr-2', 'Southbound', 'victoria');
-                fetchArrivals(STATIONS.bounds, 'arr-3', 'Southbound', 'piccadilly');
+                // Logic: Bowes Park Rail is identified by destination (Moorgate)
+                fetchArrivals(STATIONS.bowes, 'arr-1', ['Moorgate', 'Old Street', 'King\'s Cross']);
+                fetchArrivals(STATIONS.hi, 'arr-2', ['Brixton', 'Victoria', 'Oxford Circus']);
+                fetchArrivals(STATIONS.bounds, 'arr-3', ['Heathrow', 'Uxbridge', 'Rayners', 'Acton', 'Northfields']);
             } else {
                 root.style.setProperty('--accent', '#2e7d32');
                 root.style.setProperty('--bg', '#f2fdf2');
@@ -95,48 +92,42 @@
                     <h3>Leg 3: H&I (Rail) Northbound to Bowes Park</h3>
                     <div id="arr-3" class="card">Fetching...</div>
                 `;
-                fetchArrivals(STATIONS.oxford, 'arr-1', 'Northbound', 'victoria');
-                fetchArrivals(STATIONS.finsbury, 'arr-2', 'Northbound', 'piccadilly');
-                fetchArrivals(STATIONS.hi, 'arr-3', 'Northbound', 'great-northern');
+                fetchArrivals(STATIONS.oxford, 'arr-1', ['Walthamstow', 'Seven Sisters']);
+                fetchArrivals(STATIONS.finsbury, 'arr-2', ['Cockfosters', 'Arnos Grove', 'Oakwood']);
+                fetchArrivals(STATIONS.hi, 'arr-3', ['Hertford', 'Gordon Hill', 'Stevenage', 'Welwyn']);
             }
             fetchLineStatus();
             document.getElementById('last-updated').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
-        async function fetchArrivals(id, elementId, direction, lineFilter = null) {
+        async function fetchArrivals(id, elementId, validDestinations) {
             try {
                 const res = await fetch(`https://api.tfl.gov.uk/StopPoint/${id}/Arrivals?app_key=${API_KEY}`);
                 let data = await res.json();
                 
-                // Broadened filter to catch "Inbound" or "Southbound"
+                // Filter by checking if the train's destination matches our list
                 let filtered = data.filter(t => 
-                    t.platformName.toLowerCase().includes(direction.toLowerCase()) || 
-                    (direction === 'Southbound' && t.direction === 'inbound') ||
-                    (direction === 'Northbound' && t.direction === 'outbound')
+                    validDestinations.some(d => t.destinationName.includes(d))
                 );
-
-                if (lineFilter) filtered = filtered.filter(t => t.lineId === lineFilter);
-                
-                // For Leg 3 Homebound specifically (Bowes Park trains)
-                if (id === STATIONS.hi && !isOutward) {
-                    filtered = filtered.filter(t => t.destinationName.includes('Hertford') || t.destinationName.includes('Gordon') || t.destinationName.includes('Stevenage'));
-                }
 
                 filtered = filtered.sort((a, b) => a.timeToStation - b.timeToStation).slice(0, 3);
                 render(elementId, filtered);
-            } catch (e) { document.getElementById(elementId).innerText = "Unable to reach TfL."; }
+            } catch (e) { 
+                document.getElementById(elementId).innerText = "No live data available."; 
+            }
         }
 
         function render(el, items) {
             const html = items.map(t => {
                 const lineClass = t.lineId === 'piccadilly' ? 'piccadilly' : t.lineId === 'victoria' ? 'victoria' : 'rail';
                 const dest = t.destinationName.replace('Underground Station', '').replace('Rail Station', '').replace(' (London)', '');
+                const time = Math.round(t.timeToStation / 60);
                 return `
                 <div class="train-row">
                     <span class="dest"><span class="line-dot ${lineClass}"></span>${dest}</span>
-                    <span class="time">${Math.round(t.timeToStation / 60)}m</span>
+                    <span class="time">${time === 0 ? 'Due' : time + 'm'}</span>
                 </div>`;
-            }).join('') || '<div style="font-size:0.8rem; color:#999; padding:10px 0;">No departures found. Check line status.</div>';
+            }).join('') || '<div style="font-size:0.8rem; color:#999; padding:10px 0;">No departures found in next 30 mins.</div>';
             document.getElementById(el).innerHTML = html;
         }
 
@@ -154,8 +145,6 @@
         function toggleCommute() { isOutward = !isOutward; window.scrollTo(0,0); updateUI(); }
         setInterval(updateUI, 30000);
         updateUI();
-
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
 </body>
 </html>
