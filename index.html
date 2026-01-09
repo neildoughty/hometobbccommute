@@ -10,74 +10,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <style>
-        :root { 
-            --accent: #d32f2f; 
-            --bg: #fdf2f2; 
-            --card-bg: #ffffff;
-            --text-main: #1a1a1a;
-            --text-sub: #666666;
-        }
-        
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background: var(--bg); 
-            color: var(--text-main);
-            padding: 16px; 
-            transition: all 0.4s ease; 
-            margin: 0; 
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--accent);
-            padding: 20px;
-            border-radius: 20px;
-            color: white;
-            margin-bottom: 16px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.1s active;
-        }
-        .header:active { transform: scale(0.98); }
+        :root { --accent: #d32f2f; --bg: #fdf2f2; --card-bg: #ffffff; --text-main: #1a1a1a; --text-sub: #666666; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text-main); padding: 16px; transition: all 0.4s ease; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--accent); padding: 20px; border-radius: 20px; color: white; margin-bottom: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); cursor: pointer; }
         .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
         .header .icon { font-size: 1.4rem; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; }
-
         #line-status-summary { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
         .pill { font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; background: white; border: 1px solid #eee; text-transform: uppercase; }
         .pill.alert { border-color: #d32f2f; color: #d32f2f; background: #fff5f5; }
-
-        .card { 
-            background: var(--card-bg); 
-            padding: 16px; 
-            border-radius: 20px; 
-            margin-bottom: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
-        }
+        .card { background: var(--card-bg); padding: 16px; border-radius: 20px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-sub); margin: 0 0 10px 4px; letter-spacing: 1px; font-weight: 800; }
-        
-        .train-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 14px 0; 
-            border-bottom: 1px solid #f8f8f8; 
-            font-variant-numeric: tabular-nums; 
-        }
+        .train-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f8f8f8; font-variant-numeric: tabular-nums; }
         .train-row:last-child { border-bottom: none; }
         .train-row .dest { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; }
         .train-row .time { font-weight: 800; color: var(--accent); font-size: 1rem; }
-        
         .line-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
-        .piccadilly { background: #003688; }
-        .victoria { background: #0098d4; }
-        .rail { background: #333; }
-        
+        .piccadilly { background: #003688; } .victoria { background: #0098d4; } .rail { background: #333; }
         #alert-box { display: none; background: #fff9c4; padding: 14px; border-radius: 16px; margin-bottom: 16px; font-size: 0.85rem; font-weight: 600; border-left: 6px solid #fbc02d; color: #5f4b00; }
-        
         footer { margin-top: auto; text-align: center; padding: 20px; font-size: 0.7rem; color: var(--text-sub); font-weight: 600; }
     </style>
 </head>
@@ -85,7 +34,7 @@
 
     <div class="header" onclick="toggleCommute()">
         <div>
-            <p style="font-size: 0.65rem; margin: 0; text-transform: uppercase; opacity: 0.9; font-weight: 800;">Current Direction</p>
+            <p style="font-size: 0.65rem; margin: 0; text-transform: uppercase; opacity: 0.9; font-weight: 800;">Direction</p>
             <h1 id="route-label">HOME ➔ WORK</h1>
         </div>
         <div class="icon">⇄</div>
@@ -98,7 +47,6 @@
 
     <footer>
         Last Updated: <span id="last-updated">--:--</span>
-        <br><span style="opacity: 0.5; font-weight: 400;">Data via TfL Unified API</span>
     </footer>
 
     <script>
@@ -115,75 +63,68 @@
 
         async function updateUI() {
             const root = document.documentElement;
-            const routeLabel = document.getElementById('route-label');
             const container = document.getElementById('container');
-            
             document.getElementById('alert-box').style.display = 'none';
 
             if (isOutward) {
                 root.style.setProperty('--accent', '#d32f2f');
                 root.style.setProperty('--bg', '#fdf2f2');
-                routeLabel.innerText = "HOME ➔ WORK";
+                document.getElementById('route-label').innerText = "HOME ➔ WORK";
                 
                 container.innerHTML = `
-                    <h3>Leg 1: Bowes Park (Rail)</h3>
+                    <h3>Leg 1: Bowes Park (Rail) Southbound</h3>
                     <div id="arr-1" class="card">Fetching...</div>
-                    <h3>Leg 2: H&I (Victoria Line SB)</h3>
+                    <h3>Leg 2: H&I (Victoria) Southbound</h3>
                     <div id="arr-2" class="card">Fetching...</div>
-                    <h3>Backup: Bounds Green (Picc SB)</h3>
+                    <h3>Leg 3: Bounds Green (Picc) Southbound</h3>
                     <div id="arr-3" class="card">Fetching...</div>
                 `;
-                // Filter for trains going South (Moorgate/KingsX)
-                fetchArrivals(STATIONS.bowes, 'arr-1', 'Southbound', null, ['Moorgate', "King's Cross"]);
+                fetchArrivals(STATIONS.bowes, 'arr-1', 'Southbound');
                 fetchArrivals(STATIONS.hi, 'arr-2', 'Southbound', 'victoria');
-                fetchArrivals(STATIONS.bounds, 'arr-3', 'Southbound');
-                checkStationStatus(STATIONS.bounds, "Bounds Green");
+                fetchArrivals(STATIONS.bounds, 'arr-3', 'Southbound', 'piccadilly');
             } else {
                 root.style.setProperty('--accent', '#2e7d32');
                 root.style.setProperty('--bg', '#f2fdf2');
-                routeLabel.innerText = "WORK ➔ HOME";
+                document.getElementById('route-label').innerText = "WORK ➔ HOME";
 
                 container.innerHTML = `
-                    <h3>Leg 1: Oxford Circus (Vic NB)</h3>
+                    <h3>Leg 1: Oxford Circus (Victoria) Northbound</h3>
                     <div id="arr-1" class="card">Fetching...</div>
-                    <h3>Return Options (NB)</h3>
+                    <h3>Leg 2: Finsbury Park (Piccadilly) Northbound</h3>
                     <div id="arr-2" class="card">Fetching...</div>
+                    <h3>Leg 3: H&I (Rail) Northbound to Bowes Park</h3>
+                    <div id="arr-3" class="card">Fetching...</div>
                 `;
-                fetchArrivals(STATIONS.oxford, 'arr-1', 'Northbound');
-                // For H&I Rail return, we filter for Gordon Hill / Hertford / Stevenage
-                fetchMultiArrivals([STATIONS.hi, STATIONS.finsbury], 'arr-2', 'Northbound');
-                checkStationStatus(STATIONS.finsbury, "Finsbury Park");
+                fetchArrivals(STATIONS.oxford, 'arr-1', 'Northbound', 'victoria');
+                fetchArrivals(STATIONS.finsbury, 'arr-2', 'Northbound', 'piccadilly');
+                fetchArrivals(STATIONS.hi, 'arr-3', 'Northbound', 'great-northern');
             }
             fetchLineStatus();
             document.getElementById('last-updated').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
-        async function fetchArrivals(id, elementId, direction, lineFilter = null, destFilter = null) {
+        async function fetchArrivals(id, elementId, direction, lineFilter = null) {
             try {
                 const res = await fetch(`https://api.tfl.gov.uk/StopPoint/${id}/Arrivals?app_key=${API_KEY}`);
                 let data = await res.json();
                 
-                let filtered = data.filter(t => t.platformName.toLowerCase().includes(direction.toLowerCase()));
-                if (lineFilter) filtered = filtered.filter(t => t.lineId === lineFilter);
-                if (destFilter) filtered = filtered.filter(t => destFilter.some(d => t.destinationName.includes(d)));
-                
-                filtered = filtered.sort((a, b) => a.timeToStation - b.timeToStation).slice(0, 4);
-                render(elementId, filtered);
-            } catch (e) { document.getElementById(elementId).innerText = "No live data."; }
-        }
+                // Broadened filter to catch "Inbound" or "Southbound"
+                let filtered = data.filter(t => 
+                    t.platformName.toLowerCase().includes(direction.toLowerCase()) || 
+                    (direction === 'Southbound' && t.direction === 'inbound') ||
+                    (direction === 'Northbound' && t.direction === 'outbound')
+                );
 
-        async function fetchMultiArrivals(ids, elementId, direction) {
-            try {
-                const promises = ids.map(id => fetch(`https://api.tfl.gov.uk/StopPoint/${id}/Arrivals?app_key=${API_KEY}`).then(r => r.json()));
-                const results = await Promise.all(promises);
-                const combined = [].concat(...results)
-                    .filter(t => t.platformName.toLowerCase().includes(direction.toLowerCase()))
-                    // Filter out trains going the wrong way on Great Northern from H&I
-                    .filter(t => t.lineId !== 'great-northern' || (t.destinationName.includes('Hertford') || t.destinationName.includes('Gordon') || t.destinationName.includes('Stevenage')))
-                    .sort((a, b) => a.timeToStation - b.timeToStation)
-                    .slice(0, 6);
-                render(elementId, combined);
-            } catch (e) { document.getElementById(elementId).innerText = "No live data."; }
+                if (lineFilter) filtered = filtered.filter(t => t.lineId === lineFilter);
+                
+                // For Leg 3 Homebound specifically (Bowes Park trains)
+                if (id === STATIONS.hi && !isOutward) {
+                    filtered = filtered.filter(t => t.destinationName.includes('Hertford') || t.destinationName.includes('Gordon') || t.destinationName.includes('Stevenage'));
+                }
+
+                filtered = filtered.sort((a, b) => a.timeToStation - b.timeToStation).slice(0, 3);
+                render(elementId, filtered);
+            } catch (e) { document.getElementById(elementId).innerText = "Unable to reach TfL."; }
         }
 
         function render(el, items) {
@@ -195,7 +136,7 @@
                     <span class="dest"><span class="line-dot ${lineClass}"></span>${dest}</span>
                     <span class="time">${Math.round(t.timeToStation / 60)}m</span>
                 </div>`;
-            }).join('') || '<div style="font-size:0.8rem; color:#999; padding:10px 0;">No upcoming departures</div>';
+            }).join('') || '<div style="font-size:0.8rem; color:#999; padding:10px 0;">No departures found. Check line status.</div>';
             document.getElementById(el).innerHTML = html;
         }
 
@@ -210,25 +151,11 @@
             } catch (e) { }
         }
 
-        async function checkStationStatus(id, name) {
-            try {
-                const res = await fetch(`https://api.tfl.gov.uk/StopPoint/${id}/Status?app_key=${API_KEY}`);
-                const data = await res.json();
-                if (data[0] && data[0].statusSeverity !== 10) {
-                    const box = document.getElementById('alert-box');
-                    box.style.display = 'block';
-                    box.innerText = `⚠️ ${name}: ${data[0].statusSeverityDescription}`;
-                }
-            } catch (e) { }
-        }
-
-        function toggleCommute() { isOutward = !isOutward; updateUI(); }
+        function toggleCommute() { isOutward = !isOutward; window.scrollTo(0,0); updateUI(); }
         setInterval(updateUI, 30000);
         updateUI();
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
 </body>
 </html>
