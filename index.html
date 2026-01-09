@@ -12,20 +12,29 @@
     <style>
         :root { --accent: #d32f2f; --bg: #fdf2f2; --card-bg: #ffffff; --text-main: #1a1a1a; --text-sub: #666666; }
         body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text-main); padding: 16px; transition: all 0.4s ease; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--accent); padding: 20px; border-radius: 20px; color: white; margin-bottom: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); cursor: pointer; }
         .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
         .header .icon { font-size: 1.4rem; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; }
+        
         #line-status-summary { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
         .pill { font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; background: white; border: 1px solid #eee; text-transform: uppercase; }
         .pill.alert { border-color: #d32f2f; color: #d32f2f; background: #fff5f5; }
-        .card { background: var(--card-bg); padding: 16px; border-radius: 20px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-sub); margin: 0 0 10px 4px; letter-spacing: 1px; font-weight: 800; }
+        
+        .card { background: var(--card-bg); padding: 16px; border-radius: 20px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 10px 4px; }
+        h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-sub); margin: 0; letter-spacing: 1px; font-weight: 800; }
+        
+        .panic-link { font-size: 0.65rem; color: var(--accent); text-decoration: none; font-weight: 700; border: 1px solid var(--accent); padding: 2px 8px; border-radius: 6px; }
+        
         .train-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f8f8f8; font-variant-numeric: tabular-nums; }
         .train-row:last-child { border-bottom: none; }
         .train-row .dest { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; }
         .train-row .time { font-weight: 800; color: var(--accent); font-size: 1rem; }
+        
         .line-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
         .piccadilly { background: #003688; } .victoria { background: #0098d4; } .rail { background: #333; }
+        
         footer { margin-top: auto; text-align: center; padding: 20px; font-size: 0.7rem; color: var(--text-sub); font-weight: 600; }
     </style>
 </head>
@@ -58,6 +67,11 @@
             hi: '940GZZLUHAI'
         };
 
+        const PANIC_URLS = {
+            bowes: 'https://www.nationalrail.co.uk/live-trains/departures/bowes-park/',
+            hi: 'https://www.nationalrail.co.uk/live-trains/departures/highbury-and-islington/'
+        };
+
         async function updateUI() {
             const root = document.documentElement;
             const container = document.getElementById('container');
@@ -68,14 +82,13 @@
                 document.getElementById('route-label').innerText = "HOME ➔ WORK";
                 
                 container.innerHTML = `
-                    <h3>Leg 1: Bowes Park (Rail) Southbound</h3>
+                    <div class="section-header"><h3>Leg 1: Bowes Park (Rail) Southbound</h3><a href="${PANIC_URLS.bowes}" target="_blank" class="panic-link">Panic Button</a></div>
                     <div id="arr-1" class="card">Fetching...</div>
-                    <h3>Leg 2: H&I (Victoria) Southbound</h3>
+                    <div class="section-header"><h3>Leg 2: H&I (Victoria) Southbound</h3></div>
                     <div id="arr-2" class="card">Fetching...</div>
-                    <h3>Leg 3: Bounds Green (Picc) Southbound</h3>
+                    <div class="section-header"><h3>Leg 3: Bounds Green (Picc) Southbound</h3></div>
                     <div id="arr-3" class="card">Fetching...</div>
                 `;
-                // Logic: Bowes Park Rail is identified by destination (Moorgate)
                 fetchArrivals(STATIONS.bowes, 'arr-1', ['Moorgate', 'Old Street', 'King\'s Cross']);
                 fetchArrivals(STATIONS.hi, 'arr-2', ['Brixton', 'Victoria', 'Oxford Circus']);
                 fetchArrivals(STATIONS.bounds, 'arr-3', ['Heathrow', 'Uxbridge', 'Rayners', 'Acton', 'Northfields']);
@@ -85,11 +98,11 @@
                 document.getElementById('route-label').innerText = "WORK ➔ HOME";
 
                 container.innerHTML = `
-                    <h3>Leg 1: Oxford Circus (Victoria) Northbound</h3>
+                    <div class="section-header"><h3>Leg 1: Oxford Circus (Victoria) Northbound</h3></div>
                     <div id="arr-1" class="card">Fetching...</div>
-                    <h3>Leg 2: Finsbury Park (Piccadilly) Northbound</h3>
+                    <div class="section-header"><h3>Leg 2: Finsbury Park (Piccadilly) Northbound</h3></div>
                     <div id="arr-2" class="card">Fetching...</div>
-                    <h3>Leg 3: H&I (Rail) Northbound to Bowes Park</h3>
+                    <div class="section-header"><h3>Leg 3: H&I (Rail) Northbound</h3><a href="${PANIC_URLS.hi}" target="_blank" class="panic-link">Panic Button</a></div>
                     <div id="arr-3" class="card">Fetching...</div>
                 `;
                 fetchArrivals(STATIONS.oxford, 'arr-1', ['Walthamstow', 'Seven Sisters']);
@@ -104,12 +117,7 @@
             try {
                 const res = await fetch(`https://api.tfl.gov.uk/StopPoint/${id}/Arrivals?app_key=${API_KEY}`);
                 let data = await res.json();
-                
-                // Filter by checking if the train's destination matches our list
-                let filtered = data.filter(t => 
-                    validDestinations.some(d => t.destinationName.includes(d))
-                );
-
+                let filtered = data.filter(t => validDestinations.some(d => t.destinationName.includes(d)));
                 filtered = filtered.sort((a, b) => a.timeToStation - b.timeToStation).slice(0, 3);
                 render(elementId, filtered);
             } catch (e) { 
@@ -122,12 +130,11 @@
                 const lineClass = t.lineId === 'piccadilly' ? 'piccadilly' : t.lineId === 'victoria' ? 'victoria' : 'rail';
                 const dest = t.destinationName.replace('Underground Station', '').replace('Rail Station', '').replace(' (London)', '');
                 const time = Math.round(t.timeToStation / 60);
-                return `
-                <div class="train-row">
+                return `<div class="train-row">
                     <span class="dest"><span class="line-dot ${lineClass}"></span>${dest}</span>
-                    <span class="time">${time === 0 ? 'Due' : time + 'm'}</span>
+                    <span class="time">${time <= 0 ? 'Due' : time + 'm'}</span>
                 </div>`;
-            }).join('') || '<div style="font-size:0.8rem; color:#999; padding:10px 0;">No departures found in next 30 mins.</div>';
+            }).join('') || '<div style="font-size:0.8rem; color:#999; padding:10px 0;">No departures found. Try the Panic Button.</div>';
             document.getElementById(el).innerHTML = html;
         }
 
